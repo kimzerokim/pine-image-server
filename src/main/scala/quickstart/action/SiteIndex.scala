@@ -2,6 +2,8 @@ package quickstart.action
 
 import java.io.File
 import java.nio.file.{Paths, Files}
+import java.text.SimpleDateFormat
+import java.util.Calendar
 
 import io.netty.handler.codec.http.multipart.FileUpload
 
@@ -22,16 +24,23 @@ class Upload extends Action with SkipCsrfCheck {
 
 @POST("upload")
 class HelloAction extends Action with SkipCsrfCheck {
+
   def execute() {
+    var fileName: String = "temp"
+
     paramo[FileUpload]("file") match {
       case Some(file) =>
         val file = param[FileUpload]("file")
-        val path = "/Users/Andy/" + file.getFilename
+        fileName = generatedFileName(file.getFilename)
+        val path = "/Users/nhk/" + fileName
         file.renameTo(new File(path))
+        respondJson(fileName)
 
       case None =>
-        flash("Please upload a nonempty file")
+        respondJson("not pine")
     }
-    respondJson("pine")
   }
+
+  private def generatedFileName(fileName: String): String = (new SimpleDateFormat("yyMMdd_HHmmss_").format(Calendar.getInstance().getTime)
+                                                             + java.util.UUID.randomUUID.toString + "_" + fileName)
 }
